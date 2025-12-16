@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flip → Scratch → Santa</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;height:100vh;overflow:hidden;
+  background:radial-gradient(circle at top,#0b1c2d,#051432);
+  display:flex;align-items:center;justify-content:center;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+}
+
+/* Snow */
+.snowflake{position:fixed;top:-10px;color:white;opacity:.8;pointer-events:none;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(110vh)}}
+
+/* Scene */
+.scene{perspective:1200px}
+
+.card{
+  width:300px;height:460px;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform .8s cubic-bezier(.4,.2,.2,1);
+  cursor:pointer;
+}
+.card.flipped{transform:rotateY(180deg)}
+
+.side{
+  position:absolute;inset:0;border-radius:28px;
+  backface-visibility:hidden;
+}
+
+/* Front */
+.front{
+  background:linear-gradient(145deg,#1b2d45,#0b1a31);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:22px;font-weight:600;
+}
+
+/* Back (Scratch) */
+.back{transform:rotateY(180deg)}
+
+canvas{
+  width:100%;height:100%;border-radius:28px;align-items: center;
+}
+
+/* Popup */
+.popup{
+  position:fixed;inset:0;
+  background-image:url("oo.webp");
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:.6s;
+}
+.popup.show{opacity:1;pointer-events:auto}
+
+.popup-card{
+  width:380px;height:570px;border-radius:26px;
+  background:#000000;color:white;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:50px;
+  animation:pop .6s ease;
+  margin-top: 20px; /* increase/decrease this */
+}
+
+
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+.offer{
+  position:absolute;top:40px;
+  background:white;color:black;
+  padding:10px 18px;border-radius:14px;
+  font-weight:800;font-size:22px;
+}
+
+.santa{font-size:120px}
+.handle{background:#111;padding:10px 16px;border-radius:12px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="card" id="card">
+
+    <div class="side front"><img src="a.png" width="200px"></div>
+
+    <div class="side back">
+      <canvas id="scratch"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<div class="popup" id="popup">
+  <div class="popup-card">
+    <img src="a.png" width="200px">
+    <a href="https://www.instagram.com/wear.ananmanan/">
+  <img src="aaa.png" alt="Description"style="width:300px;margin-bottom:20px">
+</a>
+  </div>
+</div>
+<div class="popup" id="popup">
+  <div class="popup-card">
+    <img src="a.png" width="200px">
+</a>
+</div>
+</div>
+
+<script>
+/* Snow */
+for(let i=0;i<120;i++){
+  const s=document.createElement('div');
+  s.className='snowflake';
+  s.textContent='❄';
+  s.style.left=Math.random()*100+'vw';
+  s.style.fontSize=8+Math.random()*16+'px';
+  s.style.animationDuration=5+Math.random()*10+'s';
+  document.body.appendChild(s);
+}
+
+/* Flip */
+const card=document.getElementById('card');
+card.addEventListener('click',()=>card.classList.add('flipped'),{once:true});
+
+/* Scratch */
+const canvas=document.getElementById('scratch');
+const ctx=canvas.getContext('2d');
+const popup=document.getElementById('popup');
+
+function resize(){
+  canvas.width=canvas.offsetWidth;
+  canvas.height=canvas.offsetHeight;
+  ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#bdbdbd';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#000';
+  ctx.font='bold 26px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('Scratch Me!',canvas.width/2,60);
+}
+resize();window.addEventListener('resize',resize);
+
+let scratching=false,start=null,done=false;
+
+canvas.addEventListener('pointerdown',()=>{
+  scratching=true;
+  if(!start) start=Date.now();
+});
+canvas.addEventListener('pointerup',()=>scratching=false);
+canvas.addEventListener('pointerleave',()=>scratching=false);
+
+canvas.addEventListener('pointermove',e=>{
+  if(!scratching||done) return;
+  const r=canvas.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  const y=e.clientY-r.top;
+  ctx.globalCompositeOperation='destination-out';
+  ctx.beginPath();ctx.arc(x,y,30,0,Math.PI*2);ctx.fill();
+  if(Date.now()-start>6000){
+    done=true;
+    popup.classList.add('show');
+  }
+});
+</script>
+<audio id="bg-music" loop>
+  <source src="gggg.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  document.addEventListener("click", () => {
+    document.getElementById("bg-music").play();
+  }, { once: true });
+</script>
+
+</body>
+</html>
